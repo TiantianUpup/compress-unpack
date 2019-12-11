@@ -21,4 +21,13 @@ public class UnpackToolTest extends BaseTest {
         File file = new File("input/springboot-log.zip");
         UnpackTool.unpackZip(file, "unpack-output/");
     }
+
+    /**
+     * 解压rar测试
+     */
+    @Test
+    public void rarUnpackTest() throws Exception {
+        File file = new File("input/学习.rar");
+        UnpackTool.unpackRar(file, "unpack-output/");
+    }
 }

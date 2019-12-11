@@ -1,12 +1,13 @@
 package com.h2t.study;
 
+import com.github.junrar.Archive;
+import com.github.junrar.exception.RarException;
+import com.github.junrar.rarfile.FileHeader;
 import com.h2t.study.exception.CustomException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -76,8 +77,56 @@ public class UnpackTool {
 
     /**
      * 解压rar格式的压缩包
+     *
+     * @param sourceFile 待解压文件
+     * @param targetPath 解压路径
      */
-    private static void unpackRar() {
+    public static void unpackRar(File sourceFile, String targetPath) {
+        //参数校验
+        if (!sourceFile.exists()) {
+            LOGGER.error("the source file is not exist, source file name: {}", sourceFile.getName());
+            throw new CustomException("the source file is not exist");
+        }
+
+        LOGGER.info("start to unpack rar, filename:{}", sourceFile.getName());
+        long start = System.currentTimeMillis();
+        File targetFile = new File(targetPath);
+        if (!targetFile.exists()) {
+            targetFile.mkdirs();
+        }
+
+        try (Archive archive = new Archive(new FileInputStream(sourceFile))) {
+            FileHeader fileHeader = archive.nextFileHeader();
+            while (fileHeader != null) {
+                //如果是文件夹
+                if (fileHeader.isDirectory()) {
+                    fileHeader = archive.nextFileHeader();
+                    continue;
+                }
+
+                File out = new File(targetPath + fileHeader.getFileNameW());
+                if (!out.exists()) {
+                    if (!out.getParentFile().exists()) {
+                        out.getParentFile().mkdirs();
+                    }
+                    out.createNewFile();
+                }
+                try (FileOutputStream os = new FileOutputStream(out)) {
+                    archive.extractFile(fileHeader, os);
+                } catch (RarException e) {
+                    LOGGER.error("unpack rar throw exception, filename:{}, e:{}", sourceFile.getName(), e);
+                }
+                fileHeader = archive.nextFileHeader();
+            }
+        } catch (FileNotFoundException e) {
+            LOGGER.error("unpack rar throw exception, filename:{}, e:{}", sourceFile.getName(), e);
+        } catch (IOException e) {
+            LOGGER.error("unpack rar throw exception, filename:{}, e:{}", sourceFile.getName(), e);
+        } catch (RarException e) {
+            LOGGER.error("unpack rar throw exception, filename:{}, e:{}", sourceFile.getName(), e);
+        }
+
+        LOGGER.info("finish unpack rar, filename:{}, cost:{} ms", sourceFile.getName(), System.currentTimeMillis() - start);
     }
 
     /**
@@ -85,5 +134,4 @@ public class UnpackTool {
      */
     private static void unpackGz() {
     }
-
 }
