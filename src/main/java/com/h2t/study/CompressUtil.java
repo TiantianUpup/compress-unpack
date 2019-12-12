@@ -219,7 +219,7 @@ public class CompressUtil {
         File[] files = sourceFile.listFiles();
         for (File file : files) {
             if (file.isDirectory()) {
-                compressDirectoryToTar(file, tos, basePath + File.separator + file.getName());
+                compressDirectoryToTar(file, tos, String.format("%s%s%s", basePath, File.separator, file.getName()));
             } else {
                 try {
                     compressFileToTar(tos, file, basePath);
@@ -238,7 +238,7 @@ public class CompressUtil {
      * @throws IOException
      */
     private static void compressFileToTar(TarArchiveOutputStream tos, File sourceFile, String basePath) throws IOException {
-        TarArchiveEntry tEntry = new TarArchiveEntry(basePath + File.separator + sourceFile.getName());
+        TarArchiveEntry tEntry = new TarArchiveEntry(String.format("%s%s%s", basePath, File.separator, sourceFile.getName()));
         tEntry.setSize(sourceFile.length());
         tos.putArchiveEntry(tEntry);
 

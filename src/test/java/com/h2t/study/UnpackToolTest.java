@@ -40,4 +40,34 @@ public class UnpackToolTest extends BaseTest {
         //方式二
         UnpackUtil.unpackRar(sourcePath, targetPath);
     }
+
+    /**
+     * 解压tar.gz为tar测试
+     */
+    @Test
+    public void gzUnpackTest() throws Exception {
+        String sourcePath = "input/springboot-log.tar";
+        String targetPath = "unpack-output/";
+        UnpackUtil.unpackTar(sourcePath, targetPath);
+    }
+
+    /**
+     * 解压tar测试
+     */
+    @Test
+    public void tarUnpackTest() {
+        String sourcePath = "input/springboot-log.tar.gz";
+        String targetPath = "unpack-output/";
+        UnpackUtil.unpackGz(sourcePath, targetPath);
+    }
+
+    /**
+     * 解压tar.gz测试
+     */
+    @Test
+    public void tarGzUnpackTest() {
+        String sourcePath = "input/springboot-log.tar.gz";
+        String targetPath = "unpack-output/";
+        UnpackUtil.unpackTarGz(sourcePath, targetPath);
+    }
 }

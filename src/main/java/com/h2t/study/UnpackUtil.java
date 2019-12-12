@@ -152,32 +152,46 @@ public class UnpackUtil {
 
 
     /**
-     * 解压tar.gz格式的压缩包
+     * 解压tar.gz格式的压缩包为tar压缩包
      *
      * @param sourcePath 待解压文件路径
+     * @param targetPath 解压路径
+     * @return 解压出的tar文件的绝对路径
      */
-    private static void unpackTarGz(String sourcePath) {
+    public static String unpackGz(String sourcePath, String targetPath) {
         File sourceFile = new File(sourcePath);
+        return unpackGz(sourceFile, targetPath);
+    }
+
+    /**
+     * 解压tar.gz格式的压缩包为tar压缩包
+     *
+     * @param sourceFile 待解压文件
+     * @param targetPath 解压路径
+     * @return 解压出的tar文件的绝对路径
+     */
+    public static String unpackGz(File sourceFile, String targetPath) {
         //参数校验
         if (!sourceFile.exists()) {
             LOGGER.error("the source file is not exist, source file name: {}", sourceFile.getName());
             throw new CustomException("the source file is not exist");
         }
+        File targetFile = new File(targetPath);
+        if (!targetFile.exists()) {
+            LOGGER.info("the target file is not exist, target file name: {}. create", targetFile.getName());
+            targetFile.mkdir();
+        }
 
-        try (BufferedInputStream bis =
-                     new BufferedInputStream(new FileInputStream(sourceFile))) {
-            String fileName =
-                    sourceFile.getName().substring(0, sourceFile.getName().lastIndexOf("."));
-
-            String finalName = sourceFile.getParent() + File.separator + fileName;
-
+        File rarFile = new File(targetPath,
+                String.format("%s.%s", sourceFile.getName().split("\\.")[0], "tar"));
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile))) {
             try (BufferedOutputStream bos =
-                         new BufferedOutputStream(new FileOutputStream(finalName))) {
-                try (GzipCompressorInputStream gcis =
+                         new BufferedOutputStream(new FileOutputStream(rarFile))) {
+                try (GzipCompressorInputStream gis =
                              new GzipCompressorInputStream(bis)) {
-                    byte[] buffer = new byte[1024];
-                    int read = -1;
-                    while ((read = gcis.read(buffer)) != -1) {
+                    byte[] buffer = new byte[BUFFER_SIZE];
+                    int read;
+                    while ((read = gis.read(buffer)) != -1) {
                         bos.write(buffer, 0, read);
                     }
                 } catch (IOException e) {
@@ -187,26 +201,48 @@ public class UnpackUtil {
                 e.printStackTrace();
             }
 
-            unpackTar(finalName);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return rarFile.getAbsolutePath();
     }
 
     /**
      * 解压tar格式的压缩包
      *
-     * @param sourcePath 带解压文件路径
+     * @param sourcePath 待解压文件路径
+     * @param targetPath 解压文件路径
      */
-    public static void unpackTar(String sourcePath) {
+    public static void unpackTar(String sourcePath, String targetPath) {
         File sourceFile = new File(sourcePath);
-        String parentPath = sourceFile.getParent();
-        try (TarArchiveInputStream tais =
+        unpackTar(sourceFile, targetPath);
+    }
+
+    /**
+     * 解压tar格式的压缩包
+     *
+     * @param sourceFile 待解压文件
+     * @param targetPath 解压文件路径
+     */
+    public static void unpackTar(File sourceFile, String targetPath) {
+        //参数校验
+        if (!sourceFile.exists()) {
+            LOGGER.error("the source file is not exist, source file name: {}", sourceFile.getName());
+            throw new CustomException("the source file is not exist");
+        }
+        File targetFile = new File(targetPath);
+        if (!targetFile.exists()) {
+            LOGGER.info("the target file is not exist, target file name: {}. create", targetFile.getName());
+            targetFile.mkdir();
+        }
+
+        try (TarArchiveInputStream tis =
                      new TarArchiveInputStream(new FileInputStream(sourceFile))) {
-            TarArchiveEntry tarArchiveEntry = null;
-            while ((tarArchiveEntry = tais.getNextTarEntry()) != null) {
+            TarArchiveEntry tarArchiveEntry;
+            while ((tarArchiveEntry = tis.getNextTarEntry()) != null) {
                 String name = tarArchiveEntry.getName();
-                File tarFile = new File(parentPath, name);
+                File tarFile = new File(targetPath, name);
                 if (!tarFile.getParentFile().exists()) {
                     tarFile.getParentFile().mkdirs();
                 }
@@ -215,17 +251,28 @@ public class UnpackUtil {
                              new BufferedOutputStream(new FileOutputStream(tarFile))) {
                     int read;
                     byte[] buffer = new byte[BUFFER_SIZE];
-                    while ((read = tais.read(buffer)) != -1) {
+                    while ((read = tis.read(buffer)) != -1) {
                         bos.write(buffer, 0, read);
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //删除tar文件
-        //sourceFile.delete();
+    }
+
+    /**
+     * 解压tar.gz
+     *
+     * @param sourcePath 带解压文件路径
+     * @param targetPath 解压路径
+     */
+    public static void unpackTarGz(String sourcePath, String targetPath) {
+        //1.tar.gz解压为tar文件
+        String tarPath = unpackGz(sourcePath, targetPath);
+        //2.解压tar文件
+        unpackTar(tarPath, targetPath);
+        //3.删除tar文件
+        FileUtil.deleteFile(tarPath);
     }
 }
