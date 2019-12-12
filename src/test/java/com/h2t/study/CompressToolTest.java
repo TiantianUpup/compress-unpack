@@ -2,6 +2,7 @@ package com.h2t.study;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -17,6 +18,44 @@ public class CompressToolTest extends BaseTest {
      */
     @Test
     public void zipCompressTest() throws IOException {
-        CompressTool.compressToZip("input/springboot-log", "compress-output/");
+        String sourcePath = "input/springboot-log";
+        String targetPath = "compress-output/";
+        File sourceFile = new File(sourcePath);
+        //方式一
+        CompressUtil.compressToZip(sourceFile, targetPath);
+        //方式二
+        CompressUtil.compressToZip(sourcePath, targetPath);
+    }
+
+    /**
+     * 压缩为tar测试
+     */
+    @Test
+    public void tarCompressTest() throws IOException {
+        String sourcePath = "input/springboot-log";
+        String targetPath = "compress-output/";
+        File sourceFile = new File(sourcePath);
+        System.out.println("target path :-----------" + CompressUtil.compressToTar(sourcePath, targetPath));
+    }
+
+    /**
+     * 压缩为gz测试
+     */
+    @Test
+    public void gzCompressTest() throws IOException {
+        String sourcePath = "input/springboot-log.tar";
+        String targetPath = "compress-output/";
+        File sourceFile = new File(sourcePath);
+        CompressUtil.compressToGz(sourcePath, targetPath);
+    }
+
+    /**
+     * 将tar压缩为gz测试
+     */
+    @Test
+    public void tarGzCompressTest() {
+        String sourcePath = "input/springboot-log";
+        String targetPath = "compress-output/";
+        CompressUtil.compressToTarGz(sourcePath, targetPath);
     }
 }

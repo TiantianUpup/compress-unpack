@@ -18,8 +18,13 @@ public class UnpackToolTest extends BaseTest {
      */
     @Test
     public void zipUnpackTest() throws IOException {
-        File file = new File("input/springboot-log.zip");
-        UnpackTool.unpackZip(file, "unpack-output/");
+        String sourcePath = "input/springboot-log.zip";
+        String targetPath = "unpack-output/";
+        File file = new File(sourcePath);
+        //方式一
+        UnpackUtil.unpackZip(file, targetPath);
+        //方式二
+        UnpackUtil.unpackZip(sourcePath, targetPath);
     }
 
     /**
@@ -27,7 +32,12 @@ public class UnpackToolTest extends BaseTest {
      */
     @Test
     public void rarUnpackTest() throws Exception {
-        File file = new File("input/学习.rar");
-        UnpackTool.unpackRar(file, "unpack-output/");
+        String sourcePath = "input/学习.rar";
+        String targetPath = "unpack-output/";
+        File file = new File(sourcePath);
+        //方式一
+        UnpackUtil.unpackRar(file, targetPath);
+        //方式二
+        UnpackUtil.unpackRar(sourcePath, targetPath);
     }
 }
