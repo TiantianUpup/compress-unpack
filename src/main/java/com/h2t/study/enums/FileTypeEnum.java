@@ -8,7 +8,7 @@ package com.h2t.study.enums;
  * @Date 2019/12/12 15:37
  */
 public enum FileTypeEnum {
-    TARGZ("tar.gz"), ZIP("zip"), RAR("rar"), GZ("gz"), TAR(".tar");
+    TARGZ("tar.gz"), ZIP("zip"), RAR("rar"), GZ("gz"), TAR("tar");
     private String typeName;
 
     FileTypeEnum(String typeName) {

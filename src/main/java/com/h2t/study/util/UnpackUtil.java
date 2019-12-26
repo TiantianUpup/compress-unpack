@@ -104,10 +104,13 @@ public class UnpackUtil {
                     continue;
                 }
 
-                File out = new File(targetPath + fileHeader.getFileNameW());
+                //防止文件名中文乱码问题的处理
+                File out = new File(String.format("%s%s%s", targetPath, File.separator, fileHeader.getFileNameW().isEmpty() ? fileHeader
+                        .getFileNameString() : fileHeader.getFileNameW()));
+
                 if (!out.exists()) {
                     if (!out.getParentFile().exists()) {
-                        out.getParentFile().mkdirs();
+                        out.getParentFile().mkdirs(); //相对路径可能多级，可能需要创建父目录.
                     }
                     out.createNewFile();
                 }
