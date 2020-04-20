@@ -6,6 +6,7 @@ import com.github.junrar.rarfile.FileHeader;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,6 +96,7 @@ public class UnpackUtil {
 
         LOGGER.info("start to unpack rar file, file name:{}", sourceFile.getName());
         long start = System.currentTimeMillis();
+        System.out.println("absolute path is ============= " + sourceFile.getAbsolutePath());
         try (Archive archive = new Archive(new FileInputStream(sourceFile))) {
             FileHeader fileHeader = archive.nextFileHeader();
             while (fileHeader != null) {
@@ -134,102 +136,28 @@ public class UnpackUtil {
      *
      * @param sourcePath 待解压文件路径
      * @param targetPath 解压路径
-     * @return 解压出的tar文件的绝对路径
      */
-    public static String unpackGz(String sourcePath, String targetPath) {
-        File sourceFile = FileUtil.validateSourcePath(sourcePath);
-        return unpackGz(sourceFile, targetPath);
-    }
-
-    public static String unpackGz(File sourceFile, String targetPath) {
-        //校验解压地址是否存在
-        FileUtil.validateTargetPath(targetPath);
-
-        File rarFile = new File(targetPath,
-                String.format("%s.%s", sourceFile.getName().split("\\.")[0], "tar"));
-        LOGGER.info("start to unpack tar.gz file to tar, file name:{}", sourceFile.getName());
+    public static void unpackTarGz(String sourcePath, String targetPath) throws IOException {
         long start = System.currentTimeMillis();
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile))) {
-            try (BufferedOutputStream bos =
-                         new BufferedOutputStream(new FileOutputStream(rarFile))) {
-                try (GzipCompressorInputStream gis =
-                             new GzipCompressorInputStream(bis)) {
-                    byte[] buffer = new byte[BUFFER_SIZE];
-                    int read;
-                    while ((read = gis.read(buffer)) != -1) {
-                        bos.write(buffer, 0, read);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        LOGGER.info("finish unpack tar.gz file to tar, file name:{}, cost:{} ms", sourceFile.getName(), System.currentTimeMillis() - start);
-        return rarFile.getAbsolutePath();
-    }
-
-    /**
-     * 解压tar格式的压缩包
-     *
-     * @param sourcePath 待解压文件路径
-     * @param targetPath 解压文件路径
-     */
-    public static void unpackTar(String sourcePath, String targetPath) {
-        File sourceFile = FileUtil.validateSourcePath(sourcePath);
-        unpackTar(sourceFile, targetPath);
-    }
-
-    public static void unpackTar(File sourceFile, String targetPath) {
-        //校验解压地址是否存在
-        FileUtil.validateTargetPath(targetPath);
-
-        LOGGER.info("start to unpack tar file, file name:{}", sourceFile.getName());
-        long start = System.currentTimeMillis();
-        try (TarArchiveInputStream tis = new TarArchiveInputStream(new FileInputStream(sourceFile))) {
-            TarArchiveEntry tarArchiveEntry;
-            while ((tarArchiveEntry = tis.getNextTarEntry()) != null) {
-                String name = tarArchiveEntry.getName();
-                File tarFile = new File(targetPath, name);
-                if (!tarFile.getParentFile().exists()) {
-                    tarFile.getParentFile().mkdirs();
-                }
-
-                try (BufferedOutputStream bos =
-                             new BufferedOutputStream(new FileOutputStream(tarFile))) {
-                    int read;
-                    byte[] buffer = new byte[BUFFER_SIZE];
-                    while ((read = tis.read(buffer)) != -1) {
-                        bos.write(buffer, 0, read);
-                    }
-                }
-            }
-            LOGGER.info("finish unpack tar file, file name:{}, cost:{} ms", sourceFile.getName(), System.currentTimeMillis() - start);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 解压tar.gz
-     *
-     * @param sourcePath 带解压文件路径
-     * @param targetPath 解压路径
-     */
-    public static void unpackTarGz(String sourcePath, String targetPath) {
+        FileUtil.validateSourcePath(sourcePath);
         File sourceFile = new File(sourcePath);
         LOGGER.info("start to unpack tar.gz file, file name:{}", sourceFile.getName());
-        long start = System.currentTimeMillis();
-        //1.tar.gz解压为tar文件
-        String tarPath = unpackGz(sourcePath, targetPath);
-        //2.解压tar文件
-        unpackTar(tarPath, targetPath);
-        //3.删除tar文件
-        FileUtil.deleteFile(tarPath);
+        TarArchiveInputStream fin = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(sourceFile)));
+        File targetFile = new File(targetPath);
+        TarArchiveEntry entry;
+        while ((entry = fin.getNextTarEntry()) != null) {
+            if (entry.isDirectory()) {
+                continue;
+            }
+
+            File curFile = new File(targetFile, entry.getName());
+            File parent = curFile.getParentFile();
+            if (!parent.exists()) {
+                parent.mkdirs();
+            }
+
+            IOUtils.copy(fin, new FileOutputStream(curFile));
+        }
         LOGGER.info("finish unpack tar.gz file, file name:{}, cost:{} ms", sourceFile.getName(), System.currentTimeMillis() - start);
     }
 }

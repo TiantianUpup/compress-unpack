@@ -48,8 +48,8 @@ public class CompressToolTest extends BaseTest {
      */
     @Test
     public void tarGzCompressTest() {
-        String sourcePath = "input/springboot-log";
-        String targetPath = "compress-output/";
+        String sourcePath = "input/中文";
+        String targetPath = "G:/java工程/compress-unpack";
         CompressUtil.compressToTarGz(sourcePath, targetPath);
     }
 }

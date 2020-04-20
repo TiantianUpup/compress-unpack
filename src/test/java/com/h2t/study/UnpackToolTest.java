@@ -19,7 +19,7 @@ public class UnpackToolTest extends BaseTest {
      */
     @Test
     public void zipUnpackTest() throws IOException {
-        String sourcePath = "input/springboot-log.zip";
+        String sourcePath = "1.zip";
         String targetPath = "unpack-output/";
         File file = new File(sourcePath);
         //方式一
@@ -33,41 +33,22 @@ public class UnpackToolTest extends BaseTest {
      */
     @Test
     public void rarUnpackTest() throws Exception {
-        String sourcePath = "input/学习.rar";
-        String targetPath = "unpack-output/";
+        String sourcePath = "input/算法SDK_2.rar";
+        String targetPath = "unpack-output";
         File file = new File(sourcePath);
         //方式一
-        UnpackUtil.unpackRar(file, targetPath);
-        //方式二
         UnpackUtil.unpackRar(sourcePath, targetPath);
-    }
-
-    /**
-     * 解压tar.gz为tar测试
-     */
-    @Test
-    public void gzUnpackTest() throws Exception {
-        String sourcePath = "input/springboot-log.tar";
-        String targetPath = "unpack-output/";
-        UnpackUtil.unpackTar(sourcePath, targetPath);
-    }
-
-    /**
-     * 解压tar测试
-     */
-    @Test
-    public void tarUnpackTest() {
-        String sourcePath = "input/springboot-log.tar.gz";
-        String targetPath = "unpack-output/";
-        UnpackUtil.unpackGz(sourcePath, targetPath);
+        //方式二
+        //UnpackUtil.unRar(file, targetPath);
+        //UnpackUtil.RarFiles(sourcePath, targetPath);
     }
 
     /**
      * 解压tar.gz测试
      */
     @Test
-    public void tarGzUnpackTest() {
-        String sourcePath = "input/springboot-log.tar.gz";
+    public void tarGzUnpackTest() throws IOException {
+        String sourcePath = "input/test.tar.gz";
         String targetPath = "unpack-output/";
         UnpackUtil.unpackTarGz(sourcePath, targetPath);
     }
