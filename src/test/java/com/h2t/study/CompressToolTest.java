@@ -18,7 +18,7 @@ public class CompressToolTest extends BaseTest {
      */
     @Test
     public void zipCompressTest() throws IOException {
-        String sourcePath = "input/springboot-log";
+        String sourcePath = "input/h2ttest";
         String targetPath = "compress-output/";
         CompressUtil.compressToZip(sourcePath, targetPath);
     }

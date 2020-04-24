@@ -142,21 +142,28 @@ public class UnpackUtil {
         FileUtil.validateSourcePath(sourcePath);
         File sourceFile = new File(sourcePath);
         LOGGER.info("start to unpack tar.gz file, file name:{}", sourceFile.getName());
-        TarArchiveInputStream fin = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(sourceFile)));
-        File targetFile = new File(targetPath);
-        TarArchiveEntry entry;
-        while ((entry = fin.getNextTarEntry()) != null) {
-            if (entry.isDirectory()) {
-                continue;
+
+        try (FileInputStream fileInputStream = new FileInputStream(sourceFile);
+             GzipCompressorInputStream gzipCompressorInputStream = new GzipCompressorInputStream(fileInputStream);
+             TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(gzipCompressorInputStream)) {
+            File targetFile = new File(targetPath);
+            TarArchiveEntry entry;
+            while ((entry = tarArchiveInputStream.getNextTarEntry()) != null) {
+                if (entry.isDirectory()) {
+                    continue;
+                }
+
+                File curFile = new File(targetFile, entry.getName());
+                File parent = curFile.getParentFile();
+                if (!parent.exists()) {
+                    parent.mkdirs();
+                }
+
+                try (FileOutputStream outputStream = new FileOutputStream(curFile)) {
+                    IOUtils.copy(tarArchiveInputStream, outputStream);
+                }
             }
 
-            File curFile = new File(targetFile, entry.getName());
-            File parent = curFile.getParentFile();
-            if (!parent.exists()) {
-                parent.mkdirs();
-            }
-
-            IOUtils.copy(fin, new FileOutputStream(curFile));
         }
         LOGGER.info("finish unpack tar.gz file, file name:{}, cost:{} ms", sourceFile.getName(), System.currentTimeMillis() - start);
     }
