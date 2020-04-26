@@ -145,7 +145,7 @@ public class UnpackUtil {
 
         try (FileInputStream fileInputStream = new FileInputStream(sourceFile);
              GzipCompressorInputStream gzipCompressorInputStream = new GzipCompressorInputStream(fileInputStream);
-             TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(gzipCompressorInputStream)) {
+             TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(gzipCompressorInputStream, "UTF-8")) {
             File targetFile = new File(targetPath);
             TarArchiveEntry entry;
             while ((entry = tarArchiveInputStream.getNextTarEntry()) != null) {
